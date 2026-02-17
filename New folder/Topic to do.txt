@@ -1,0 +1,19 @@
+Data Warehousing concept
+SQL
+databrick
+azure key vault secrete
+
+------
+strands, sdk ( software development kit)
+LLM ( large lanuage model )
+agents and tool
+bedrock agent core and bed rock agent core app
+type of logger and logging fram work
+Agentic AI
+MCP in aws and getways
+Fast API and API , API call
+Build end to end AI app
+
+Git Code
+
+in filemanager open folder and then opend cmd from that path and use (code .) so it will directly open perticular folder in vs code

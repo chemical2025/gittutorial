@@ -1,0 +1,3 @@
+# Creating a pair RDD using the first word as the key in Python
+pairs = lines.map(lambda x: (x.split(" ")[0], x))
+

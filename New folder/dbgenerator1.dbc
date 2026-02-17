@@ -1,0 +1,98 @@
+Part 1: Dynamic CDC Enablement for Multiple SQL Server Tables
+Instead of hardcoding each table, you can write a dynamic SQL script that loops through all tables in a schema and enables CDC for each one.
+script need to search
+
+Part 2: Using Azure Data Factory (ADF) to Extract CDC Changes Periodically
+🧭 ADF Flow Overview
+Here’s how ADF works in a CDC pipeline:
+
+Trigger: ADF pipeline runs on a schedule (e.g., every 5 minutes).
+Source: Connects to SQL Server and queries CDC tables.
+Transformation (optional): Applies filters or schema mapping.
+Sink: Writes the data to ADLS in Parquet/CSV/JSON format.
+Databricks Auto Loader: Picks up the new files from ADLS.
+
+ ADF Pipeline Components
+🔹 1. Linked Services
+SQL Server: Connect using Self-hosted Integration Runtime (SHIR).
+ADLS Gen2: Connect using Azure Blob Storage or Data Lake connector.
+
+🔹 2. Datasets
+CDC Source Dataset: SQL query like:
+Sink Dataset: ADLS folder path with file format (Parquet recommended).
+
+🔹 3. Activities
+Lookup: Get last processed LSN (Log Sequence Number) from a metadata table.
+Copy Activity: Extract CDC changes and write to ADLS.
+Stored Procedure: Update last processed LSN after successful copy.
+
+🔹 4. Triggers
+Time-based trigger (e.g., every 5 minutes)
+
+🔁 How the Stored Procedure Updates the Last Processed LSN
+
+🔹 Step-by-Step Flow:
+ADF Lookup Activity:
+
+Reads the last_lsn from the metadata table:
+SELECT last_lsn FROM dbo.CDC_Metadata WHERE table_name = 'transactions';
+
+ADF Copy Activity:
+
+Uses this last_lsn to extract only new changes from the CDC table:
+SELECT * FROM cdc.dbo_transactions_CT WHERE __$start_lsn > @last_lsn;
+
+ADF Stored Procedure Activity:
+
+After successful copy, ADF calls a stored procedure like:
+EXEC dbo.UpdateLastLSN 'transactions', @new_lsn;
+
+Stored Procedure Logic:
+CREATE PROCEDURE dbo.UpdateLastLSN
+    @table_name NVARCHAR(128),
+    @new_lsn BINARY(10)
+AS
+BEGIN
+    UPDATE dbo.CDC_Metadata
+    SET last_lsn = @new_lsn,
+        last_updated = GETDATE()
+    WHERE table_name = @table_name;
+END
+
+Updates the metadata table with the new LSN:
+
+🧠 How to Get the New LSN
+You can get the maximum LSN from the CDC change data during the copy activity using:
+SELECT MAX(__$start_lsn) FROM cdc.dbo_transactions_CT WHERE __$start_lsn > @last_lsn;
+
+ADF can use this value as @new_lsn in the stored procedure.
+
+# 🧠 Strategy for CDC Migration
+Enable CDC on newly added or frequently modified tables.
+Track changes using CDC change tables (cdc.<schema>_<table>_CT).
+Use ADF to extract changes based on LSN and write to ADLS.
+Ingest into Databricks using Auto Loader and Delta.
+
+#-----------------here how we take table from sql server to ADLS location by enabling CDC on table
+🔹 Step 1: Identify Tables for CDC
+In a real-time project, you typically:
+
+Maintain a list of critical tables (e.g., transactions, accounts, customers)
+Periodically scan for newly added tables using system views like sys.tables
+Use a metadata-driven approach to track which tables are already CDC-enabled
+🔹 Step 2: Enable CDC Dynamically
+You can use a script to enable CDC on all new or frequently modified tables:
+
+
+This ensures CDC is enabled for all new tables.
+
+🔍 Step 3: Track Changes Using CDC Tables
+Once CDC is enabled, SQL Server creates change tracking tables like:
+
+cdc.dbo_transactions_CT
+cdc.dbo_customers_CT
+These contain:
+
+__$start_lsn: When the change occurred
+__$operation: Type of change (1=delete, 2=insert, 3=update before, 4=update after)
+All columns from the original table
