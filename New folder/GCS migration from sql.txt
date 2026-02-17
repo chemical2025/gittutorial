@@ -1,0 +1,109 @@
+from pyspark.sql import SparkSession
+import json
+from google.cloud import storage
+
+# Initialize Spark session
+spark = SparkSession.builder \
+    .appName("SQLServerToGCS") \
+    .config("spark.driver.extraClassPath", "/path/to/sqljdbc42.jar") \
+    .getOrCreate()
+
+# GCS bucket and config file path
+bucket_name = "my-etl-bucket"
+config_blob_path = "config/config.json"
+output_path = "gs://my-etl-bucket/output/"
+
+# Initialize GCS client
+client = storage.Client()
+bucket = client.get_bucket(bucket_name)
+blob = bucket.blob(config_blob_path)
+config_data = json.loads(blob.download_as_text())
+
+# Extract config values
+sql_config = config_data["sql_server"]
+last_processed = config_data["last_processed"]
+
+# JDBC connection
+jdbc_url = f"jdbc:sqlserver://{sql_config['host']}:{sql_config['port']};databaseName={sql_config['database']}"
+connection_properties = {
+    "user": sql_config["username"],
+    "password": sql_config["password"],
+    "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+}
+
+# SQL query to fetch new records
+query = f"(SELECT * FROM {sql_config['table']} WHERE {last_processed['column']} > '{last_processed['value']}') AS subquery"
+df = spark.read.jdbc(url=jdbc_url, table=query, properties=connection_properties)
+
+# Write to GCS in Parquet format
+if df.count() > 0:
+    df.write.mode("overwrite").parquet(output_path)
+
+    # Update last_processed timestamp
+    latest_value = df.agg({last_processed['column']: "max"}).collect()[0][0]
+    config_data["last_processed"]["value"] = str(latest_value)
+    blob.upload_from_string(json.dumps(config_data, indent=4), content_type="application/json")
+
+print("PySpark job completed successfully.")
+
+
+
+### SQL to Delta table
+
+from delta.tables import DeltaTable
+
+# Check if Delta table exists
+if not DeltaTable.isDeltaTable(spark, delta_path):
+    print(f"🔧 Creating Delta table for: {table}")
+    df.write.format("delta").mode("overwrite").save(delta_path)
+else:
+    print(f"🔄 Delta table exists for: {table}, performing merge")
+    df.createOrReplaceTempView("source_data")
+    spark.sql(f"""
+        MERGE INTO delta.`{delta_path}` AS target
+        USING source_data AS source
+        ON target.id = source.id
+        WHEN MATCHED THEN UPDATE SET *
+        WHEN NOT MATCHED THEN INSERT *
+    """)
+	
+###
+
+below is the JD..
+ 
+Background
+Client is on a journey to modernize and advance our Finance Technology landscape, covering Billing, Financial Planning, Accounting, Settlement, Treasury, Reporting and Analytics. This position will be responsible for developing and delivering high-impact technology solutions that align with our business and technical objectives. By collaborating with cross-functional teams, including business/product owners and other technical experts, you will ensure that our solutions meet evolving customer needs while improving performance, scalability, and reliability.
+ 
+Responsibilities
+Partnering with data owners, engineering and platform teams to establish robust data pipelines, implement data models, and ensure seamless integration across diverse systems and domains.
+Ensure alignment between business goals and technical execution, making sure features and solutions meet business requirements and customer needs.
+Participate in sprint planning, retrospectives, and other agile ceremonies to ensure the team is aligned and delivering efficiently.
+Adoption of best practices in software / data engineering, including automated code reviews, testing, and continuous integration/continuous delivery (CI/CD).
+Optimize the cost/benefit of software features and architecture, ensuring scalability, performance, and operational efficiency.
+Ensuring solutions align with client engineering and data principles, and technical policies.
+Identify opportunities for process improvements, helping to streamline workflows and enhance team productivity.
+Work closely with Product Owners / business to understand requirements and implement technical solutions with engineering best practices.
+Stay abreast of Data Platform technology trends and industry best practices to hone and maintain your talent
+Participate in architectural discussions, iteration planning, and feature sizing meetings
+Adhere to Agile processes and participate actively in agile ceremonies
+ 
+All About You
+4+ years of hands-on experience developing solutions on Cloud data platform, majorly in Databricks.
+Proven experience as a data engineer, with a strong focus on delivering large-scale projects in an agile environment.
+Hands-on experience in Databricks and deep understanding of its architecture.
+Design, develop and implement large-scale, high-volume, high-performance, highly available, scalable data-based solution and pipelines for the Databricks Lakehouse platform in AWS cloud
+Hands-on experience developing and supporting data lakes, lakehouses, warehouse on-premise and on cloud, ETL solutions and other analytics solutions.
+Prior experience with financial systems, such as Oracle Financials, Oracle Fusion Cloud, and Hyperion, with experience optimizing their integration into broader data ecosystems, is a plus.
+Experience with data lifecycle management, including ingestion, ETL, pruning, modeling, and governance, within highly regulated environments.
+Expertise in modern data engineering best practices, CI/CD, automated testing, and code reviews, etc.
+Strong programming skills in Python and frameworks, with a focus on building scalable, reliable, and performant solutions.
+Experience with performance engineering, ensuring systems are built to scale and meet varying demands.
+Knowledge of security best practices and experience in ensuring the secure development of applications.
+Experience working with development / engineering teams in a global environment.
+Experience on native AWS cloud services.
+Experience and knowledge of Bit Bucket, Rally, and Jenkins a plus
+Strong understanding of cloud DevOps practices and implementation.
+Understanding of any one database technology - like Exadata/ Oracle / Netezza / SQL server
+Understanding of SDLC and experience in establishing processes, standards and governance to bring efficiency within development team
+ 
+ 

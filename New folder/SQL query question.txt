@@ -1,0 +1,216 @@
+Q.1. Write a SQL query to fetch "FIRST_NAME" from the Student table in upper case and use ALIAS name as STUDENT_NAME?
+select upper(first_name) as student_name from student;
+
+2. Write a SQL query to fetch unique values of MAJOR Subjects from Student table.
+select distint(major) from student;
+
+3. Write a SQL query to print the first 3 characters of FIRST_NAME from Student table.
+select substring(FIRST_NAME,1,3) from student;
+
+4. Write a SQL query to find the position of alphabet ('a') int the first name column 'Shivansh' from Student table.
+select INSTR( lower(first_name), 'a') from student where first_name = 'Shivansh';
+
+5. Write a SQL query to print FIRST_NAME from the Student table after replacing 'a' with 'A'.
+select REPLACE( first_name, 'a','A') from student;
+
+7. Write a SQL query to print the FIRST_NAME and LAST_NAME from Student table into single column COMPLETE_NAME.
+select CONCAT( first_name, ' ', last_name ) as COMPLETE_NAME from student;
+
+8. Write a SQL query to print details of the Students whose FIRST_NAME ends with 'a'.
+select * from student where first_name LIKE '%a';
+
+9. Write an SQL query to print details of the Students whose FIRST_NAME ends with ‘a’ and contains five alphabets.
+select * from student where first_name LIKE '_____a';
+
+10. Write an SQL query to print details of the Students whose GPA lies between 9.00 and 9.99.
+select * from student where GPA BETWEEN 9.00 and 9.99;
+
+11. Write an SQL query to fetch the count of Students having Major Subject ‘Computer Science’.
+select major, count(*) as Count_of_student from student where major = 'Computer_science';
+
+12. Write an SQL query to fetch Students full names with GPA >= 8.5 and <= 9.5.
+select CONCAT(first_name, ' ', last_name) as Full_Name from student where GPA BETWEEN 8.5 AND 9.5;
+
+13. Write an SQL query to fetch the no. of Students for each MAJOR subject in the descending order.
+select major, count(*) as no_of_student from student groupBy major orderBy no_of_student DESC;
+
+14. Display the details of students who have received scholarships, including their names, scholarship amounts, and scholarship dates.
+SELECT 
+    Student.FIRST_NAME,
+    Student.LAST_NAME,
+    Scholarship.SCHOLARSHIP_AMOUNT,
+    Scholarship.SCHOLARSHIP_DATE
+FROM 
+    Student
+INNER JOIN 
+    Scholarship ON Student.STUDENT_ID = Scholarship.STUDENT_REF_ID;
+	
+15. Write an SQL query to show only odd rows from Student table.	
+select * from student where student_id%2 !=0; (=0) means even values
+
+16. Write an SQL query to determine the nth (say n=5) highest GPA from a table.
+select * from student orderBy GPA DESC LIMIT 4,1;
+
+17. Write an SQL query to determine the 5th highest GPA without using LIMIT keyword.
+select GDP from (
+select GDP, DENSE_RANK() OVER (PARTION BY dept ORDER BY GDP DESC) AS Rank from student )
+AS RankGPA
+where Rank = 5;
+
+18. Write an SQL query to fetch the list of Students with the same GPA.
+select DISTINCT s1.* from student s1 join student s2 on s1.GDP = s2.GDP AND s1.student_id != s2.student_id ;
+
+19. Write an SQL query to show the second highest GPA from a Student table using sub-query.
+select MAX(GPA) from student
+where GPA < ( select MAX(GPA) from student);
+or
+WHERE GPA NOT IN(SELECT MAX(GPA) FROM Student);
+
+20. Write an SQL query to show one row twice in results from a table.
+select * from student
+UNION ALL
+select * from student ORDER BY student_id;
+
+21. Write an SQL query to list STUDENT_ID who does not get Scholarship.
+select student_id from student 
+where student_id NOT IN ( select stud_ref_id from scholarship);
+
+22. Write an SQL query to fetch the first 50% records from a table.
+SELECT * FROM Student 
+LIMIT (SELECT FLOOR(COUNT(*) / 2) FROM Student);
+
+23. Write an SQL query to fetch the MAJOR subject that have less than 4 people in it.
+select major, count(major) from student groupBy major having count(major)<4 ;
+
+24. Write an SQL query to fetch the names of Students who has highest GPA.
+select student, GPA from student where GPA = ( select MAX(GPA) from student );
+
+25. Write an SQL query to show the current date and time.
+select CURDATE();
+select NOW(); # its gives both date and time.
+
+26. Write an SQL query to find the students who have the same GPA as 'Shivansh Mahajan.
+select * from student where GPA = ( select GPA from student where name = 'Shivansh Mahajan') ;
+
+# Extract()
+select student_id, name, Extract( year from sale_date) as sales_year from students ;
+
+#DATE_ADD()
+SELECT sale_id, product_name, DATE_ADD(sale_date, INTERVAL 7 DAY) AS sale_date_plus_7_days FROM sales;
+
+# DATE_SUB()
+SELECT sale_id, product_name,DATE_SUB(sale_date, INTERVAL 3 DAY) AS sale_date_minus_3_days FROM sales;
+
+# DATEDIFF() The DATEDIFF() function returns the difference in days between two dates.
+SELECT sale_id, product_name, sale_date,DATEDIFF('2024-08-15', sale_date) AS days_until_aug15 FROM sales;
+
+#ADDDATE()
+SELECT sale_id, product_name, ADDDATE(sale_date, INTERVAL 10 DAY) AS sale_date_plus_10_days FROM sales;
+
+# The ADDTIME() function adds a specified time interval to a time or datetime value
+SELECT sale_id, product_name, ADDTIME('10:30:00', '02:30:00') AS sale_time_plus_2hrs_30min FROM sales;
+
+27. Count Sales Per Day from the Sales table
+SELECT sale_date, COUNT(*) AS sales_count FROM Sales GROUP BY sale_date ORDER BY sale_date;
+
+28. Retrieve the total_price of all sales, rounding the values to two decimal places.
+select ROUND (SUM(sales),2) AS Total_sale from sales;
+
+26. Retrieve the sale_id and sale_date from the Sales table, formatting the sale_date as 'YYYY-MM-DD'.
+select sales_id, DATE_FORMAT(sales_date, '%Y-%m-%d') AS Fromated_date from sales;
+
+27. Identify the Most Frequently Sold Product from Sales table
+select product_name, count(*) as sales_count from sales groupBy product_name orderBy sales_count DESC;
+
+28. Find the Products Not Sold from Products table
+select product_name, product_id from product where product_id NOT IN (select DISTINCT product_id from sales);
+or by using left join
+select p.product_name, p.product_id from product p LEFT JOIN sales s ON p.product_id= s.product_id where s.product_id IS NULL;
+
+29. Calculate the total revenue generated from sales for each product category.
+SELECT p.category, SUM(s.price * s.quantity) AS total_revenue FROM Sales s JOIN Products p ON s.product_id = p.product_id GROUP BY p.category;
+
+29. Count the number of sales made in each month.
+SELECT MONTH(s.sale_date) AS month, COUNT(*) AS sales_count ( Use MONTH() if you only care about the month number )
+SELECT DATE_FORMAT(s.sale_date, '%Y-%m') AS month, COUNT(*) AS sales_count ( Use DATE_FORMAT('%Y-%m') if you want to group by both year and month )
+FROM Sales s
+GROUP BY month;
+
+30. Calculate the running total revenue for each product category.
+select id, product, SUM(sales) OVER ( PARTITION BY category ORDER BY date) as Running_sales from sales;
+
+31. 16. Categorize sales as "High", "Medium", or "Low" based on total price (e.g., > $200 is High, $100-$200 is Medium, < $100 is Low).
+select id, case 
+				when sale > 200 then 'high'
+				when sale BETWEEN 100 AND 200 then 'medium'
+				else 'low'
+			END as Category
+		from sales;
+		
+32. Calculate the number of days between the current date and the sale date for each sale.
+select sals_id, DATEDIFF( NOW(), sale_date) as day_since_sale from sales;
+
+33. Identify sales made during weekdays versus weekends.
+select sales_id, case
+		when DAYOFWEEK (sales_date) IN (1,7) THEN 'weekend'
+		else 'weekday'
+		END as day_type
+from sales;
+
+34. List the Top 3 Products by Revenue Contribution Percentage
+select p.product, SUM(s.sales) as total_revenue, ( SUM(s.sale)/ ( select SUM(sale) from sales)) * 100 AS grand_revenue
+FROM sales s join product p on s.id = p.id groupBy p.product orderBy grand_revenue DESC LIMIT 3;
+
+35.Retrieve the product details (name, category, unit price) for products that have a quantity sold greater than the average quantity sold across all products.
+SELECT product_name, category, unit_price FROM Products
+WHERE product_id IN (
+    SELECT product_id
+    FROM Sales
+    GROUP BY product_id
+    HAVING SUM(quantity_sold) > (SELECT AVG(quantity_sold) FROM Sales)
+);
+
+# With an index on the sale_date column, the database can quickly locate the rows that match the specified date without scanning the entire table. 
+The index allows for efficient lookup of rows based on the sale_date value, resulting in improved query performance.
+
+-- Create an index on the sale_date column
+CREATE INDEX idx_sale_date ON Sales (sale_date);
+
+-- Query with indexing
+SELECT *
+FROM Sales
+WHERE sale_date = '2024-01-03';
+
+36. Add a foreign key constraint to the Sales table that references the product_id column in the Products table.
+ALTER TABLE sales
+ADD CONSTRAINT fk_prod_id
+Foreign Key (product_id) REFERENCE Product( product_id);
+
+37. Add a check constraint to the quantity_sold column in the Sales table to ensure that the quantity sold is always greater than zero.
+ALTER TABLE sales ADD CONSTRAINT 
+ch_qty_sold CHECK( quantity_sold > 0 );
+
+38. i want new column which has max salary from table
+select .*, max(salary) OVER() as Max_sal from emp;
+
+🎯 Goal: Insert a new customer or update if exists:
+
+CREATE PROCEDURE UpsertCustomer
+    @CustomerID INT,
+    @CustomerName VARCHAR(100),
+    @Email VARCHAR(100)
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM Customers WHERE CustomerID = @CustomerID)
+    BEGIN
+        UPDATE Customers
+        SET CustomerName = @CustomerName,
+            Email = @Email
+        WHERE CustomerID = @CustomerID;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO Customers (CustomerID, CustomerName, Email)
+        VALUES (@CustomerID, @CustomerName, @Email);
+    END
+END;
