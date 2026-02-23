@@ -15,6 +15,9 @@ values
 (2, 'Jane Smith'),
 (3, 'Alice Johnson');
 
+-- Insert command in which we select records from another table
+insert into employee1 select * from Employee;
+
 insert into customers (cust_name) values ('Ram'); 
 -- Auto-incrementing cust_id will be generated for Ram
 -- by using this we can add only value in cust_name column and cust_id will be generated automatically as its primary key and auto-incrementing and if we have other columns then that column value will be null because we have not provided any value for that column and if we have not set that column as not null then it will allow null value in that column but if we have set that column as not null then it will not allow null value in that column and it will throw an error if we try to insert a record without providing a value for that column.
@@ -98,6 +101,19 @@ WHERE product_id = 2 and price > 100; -- This will update the name to 'kisan' on
 update product
 set name = 'kisan'; -- This will update the name to 'kisan' for all records in the product table, which is not recommended unless you intend to update all records.
 
+-- Update with CASE Statement
+update product
+set price = case 
+    when price < 50 then price * 1.1 -- Increase price by 10% if it's less than 50
+    when price >= 50 and price < 100 then price * 1.05 -- Increase price by 5% if it's between 50 and 100
+    else price -- Keep the price unchanged if it's 100 or more
+end;
+
+-- Reset the "Age" column to NULL for all employees.
+UPDATE Employees -- Specify the table to update.
+SET Age = NULL; -- Set the "Age" column to NULL for all rows.
+
+
 -- delete command
 
 delete from product
@@ -107,6 +123,13 @@ delete from product
 where price > 100; -- This will delete all records from the product table where the price is greater than 100.
 
 delete from product; -- This will delete all records from the product table, which is not recommended unless you intend to delete all records.
+
+-- Write a SQL query to copy data from one table into another table.
+
+-- Insert employees from the "OldEmployees" table into the "Employees" table.
+INSERT INTO Employees (EmployeeID, Name, Age, Salary) -- Specify the target columns.
+SELECT EmployeeID, Name, Age, Salary FROM OldEmployees; -- Copy data from another table.
+
 
 -- Trnsaformations in SQL 
 
