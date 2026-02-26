@@ -190,6 +190,12 @@ GROUP BY category; -- This will group the products by category and calculate the
 
 -- Filtering grouped data: HAVING
 
+WHERE cannot use aggregate functions (COUNT, SUM, MAX, etc.).
+Use WHERE for row-level predicates (e.g., customer_id BETWEEN ...).
+
+HAVING can use aggregates.
+Use HAVING to test aggregate results (e.g., HAVING MAX(purch_amt) > 1000).
+
 SELECT category, COUNT(*) as total_products from product
 GROUP BY category
 HAVING COUNT(*) > 5; -- This will filter the grouped data to only show categories with more than 5 products.
@@ -209,3 +215,10 @@ select *, avg(price) over (partition by category order by price rows between unb
 select *, row_number() over (order by price) as row_num from product; -- This will assign a unique row number to each product ordered by price.
 select *, rank() over (order by price) as price_rank from product; -- This will assign a rank to each product based on price, with ties receiving the same rank and the next rank being skipped.
 select *, dense_rank() over (partition by category order by price) as dense_price_rank from product; -- This will assign a dense rank to each product based on price within each category, with ties receiving the same rank and the next rank being the next consecutive number.
+
+-- SQL Improve Query Performance
+
+-- Indexes: Create indexes on columns that are frequently used in WHERE clauses, JOIN conditions, or ORDER BY clauses to speed up query execution.
+
+CREATE INDEX IX_Employees_LastName
+ON Employees (LastName); -- This will create an index named IX_Employees_LastName on the LastName column of the Employees table to improve query performance when filtering or sorting by last name.
