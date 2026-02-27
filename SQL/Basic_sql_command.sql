@@ -213,7 +213,7 @@ select *, sum(price) over (partition by category order by price rows between unb
 select *, avg(price) over (partition by category order by price rows between unbounded preceding and unbounded following) as average_price from product; -- This will calculate the average price for each product partitioned by category and ordered by price.
 
 select *, row_number() over (order by price) as row_num from product; -- This will assign a unique row number to each product ordered by price.
-select *, rank() over (order by price) as price_rank from product; -- This will assign a rank to each product based on price, with ties receiving the same rank and the next rank being skipped.
+select *git , rank() over (order by price) as price_rank from product; -- This will assign a rank to each product based on price, with ties receiving the same rank and the next rank being skipped.
 select *, dense_rank() over (partition by category order by price) as dense_price_rank from product; -- This will assign a dense rank to each product based on price within each category, with ties receiving the same rank and the next rank being the next consecutive number.
 
 -- SQL Improve Query Performance
