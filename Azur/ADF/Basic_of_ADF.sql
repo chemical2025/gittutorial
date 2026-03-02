@@ -32,3 +32,25 @@ Schedule and Tumbling Window Triggers: Used to run ETL/ELT processes at specific
 Storage Event Triggers: These allow for event-driven integration, where a pipeline is automatically "fired" the moment a file is uploaded to a storage container.
 These concepts work together to move a developer from basic data migration to building production-ready workflows, such as pulling data from an API and validating it before performing complex Spark-based transformations.
 If you would like to dive deeper into these processes, I can create a tailored report on building a production ETL pipeline or a quiz to test your understanding of these core components.
+
+-- ADF Copy Activity:
+
+The Copy Activity is a fundamental component of Azure Data Factory (ADF) that enables the movement of data from a source to a destination. It is used in nearly 99.99% of solutions to migrate data, making it an essential tool for data engineers working with ADF.
+We have do following things to use Copy Activity:
+1. Create Linked Services: First, we need to create Linked Services to connect to both the source and the destination. Linked Services act as the connection strings that allow ADF to communicate with external data sources and destinations.
+2. Create Datasets: Next, we create Datasets to specify the data we want to move or transform. Datasets represent the data structures used in the activities and define the schema and location of the data.
+3. Use Copy Activity: Finally, we use the Copy Activity to move the data from the source to the destination. The Copy Activity allows us to specify the source and destination datasets, as well as any necessary transformations or mappings that need to be applied during the data movement process.
+The Copy Activity supports a wide range of data sources and destinations, including SQL databases, APIs, CSV files, Azure Data Lake, and AWS S3. It also provides options for handling data transformations, such as mapping columns, applying filters, and performing data type conversions.
+Here is a simple example of how to use the Copy Activity in ADF:
+1. Create Linked Services:
+   - Linked Service for Source: Connect to a SQL database.
+   - Linked Service for Destination: Connect to an Azure Data Lake.
+2. Create Datasets:
+   - Dataset for Source: Define the table or query that retrieves the data from the SQL database
+    - Dataset for Destination: Define the folder or file path in the Azure Data Lake where the data will be stored.
+3. Use Copy Activity:
+   - In the ADF pipeline, add a Copy Activity.
+    - Configure the Copy Activity to use the source and destination datasets.
+    - Specify any necessary transformations or mappings, such as column mappings or data type conversions.
+4. Run the Pipeline: Execute the pipeline to start the data movement process. The Copy Activity will extract the data from the SQL database, apply any specified transformations, and load it into the Azure Data Lake.
+Overall, the Copy Activity is a powerful and versatile component of ADF that allows data engineers to efficiently move and transform data across various platforms, making it an essential tool for modern data engineering tasks.
