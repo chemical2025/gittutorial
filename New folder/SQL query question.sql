@@ -32,7 +32,7 @@ select major, count(*) as Count_of_student from student where major = 'Computer_
 select CONCAT(first_name, ' ', last_name) as Full_Name from student where GPA BETWEEN 8.5 AND 9.5;
 
 13. Write an SQL query to fetch the no. of Students for each MAJOR subject in the descending order.
-select major, count(*) as no_of_student from student groupBy major orderBy no_of_student DESC;
+select major, count(*) as no_of_student from student group By major orderBy no_of_student DESC;
 
 14. Display the details of students who have received scholarships, including their names, scholarship amounts, and scholarship dates.
 SELECT 
